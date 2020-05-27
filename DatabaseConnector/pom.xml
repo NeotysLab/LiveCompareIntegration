@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>livecompareParser</artifactId>
+        <groupId>com.neotys.tricentis</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>DatabaseConnector</artifactId>
+    <properties>
+
+        <spring-boot.version>2.0.3.RELEASE</spring-boot.version>
+        <spring-web.version>5.0.7.RELEASE</spring-web.version>
+        <guava.version>25.1-jre</guava.version>
+        <immutables.version>2.6.3</immutables.version>
+        <netty-transport.version>4.1.21.Final</netty-transport.version>
+
+        <reactor-core.version>3.1.8.RELEASE</reactor-core.version>
+        <reactor-netty.version>0.7.8.RELEASE</reactor-netty.version>
+        <slf4j-api.version>1.7.25</slf4j-api.version>
+        <mongo.version>3.8.0</mongo.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.spring_mongo.data>2.0.3.RELEASE</maven.spring_mongo.data>
+
+
+
+    </properties>
+    <dependencies>    <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongo-java-driver</artifactId>
+        <version>${mongo.version}</version>
+    </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-mongodb -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+            <version>${maven.spring_mongo.data}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+            <version>${immutables.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>2.0.3.RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+            <version>2.1.3.RELEASE</version>
+        </dependency>
+
+    </dependencies>
+    <build>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>

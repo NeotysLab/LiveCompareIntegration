@@ -1,0 +1,53 @@
+version: '3.6'
+
+services:
+  workload_parser:
+    image: hrexed/neoload_livecomworkloadparser:latest
+    container_name: workloadparser
+    volumes:
+      - /opt/workloadparser/log:/opt/WorkLoadParser/log
+    ports:
+    - "8081:8081"
+    environment:
+    - PORT=8081
+    - log-level=DEBUG
+    networks:
+      - perf_network
+
+  csvParser:
+    image: hrexed/neoload_livecompareparser:latest
+    container_name: csvparser
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile.log_parser
+    volumes:
+      - /opt/csvParser/input:/opt/csvParser/input
+      - /opt/csvParser/log:/opt/csvParser/log
+    ports:
+    - "8080:8080"
+    environment:
+    - PORT=8080
+    - log-level=DEBUG
+    - csvFolder=/opt/csvParser/log
+    networks:
+      - perf_network
+  mongodb:
+    image: mongo:4.0
+    environment:
+      - MONGO_INITDB_DATABASE=LiveCompareParser
+      - AUTH=yes
+      - DATABASENAME=LiveCompareParser
+      - HOST= <YOURHOST>
+      - PORT=27017
+      - USER= <MONGOUSER>
+      - PASSWORD= <MONGOPASSWORD>
+    ports:
+      - 27017:27017
+    volumes:
+      - /opt/mongo/data/:/data/db
+      - /opt/mongo/config/:/data/configdb
+    networks:
+      - perf_network
+
+networks:
+  perf_network:
