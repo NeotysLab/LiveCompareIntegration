@@ -1,18 +1,22 @@
 package com.neotys.tricentis.stadDataparser.app;
 
+import com.neotys.tricentis.stadDataparser.exception.StadDataConfigExceptin;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.Properties;
+
+import static com.neotys.tricentis.stadDataparser.Config.Constants.SECRET_DIR;
 
 public class StadDataConfig {
     private static String TESTINGDIRECTORY ;
-    private static final String BUNDLE_NAME = "stadData-extraction.properties";
 
-    public StadDataConfig() {
-        initConnector();
+    public StadDataConfig() throws StadDataConfigExceptin {
+        init();
     }
 
-    public static String getTESTINGDIRECTORY() {
+    public  String getTESTINGDIRECTORY() {
         return TESTINGDIRECTORY;
     }
 
@@ -20,30 +24,14 @@ public class StadDataConfig {
      * API TOKENs and CLIENT ID come from Neotys Dynatrace SAAS account.
      */
 
+    private void init() throws StadDataConfigExceptin {
+        Optional<String> directory= Optional.ofNullable(System.getenv(SECRET_DIR)).filter(o->!o.isEmpty());
+        if(!directory.isPresent())
+            throw new StadDataConfigExceptin("The directory environment variable is missing");
 
-    public  void initConnector()
-    {
-        String port;
-
-        Properties prop = new Properties();
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(BUNDLE_NAME);
-
-        if (inputStream != null) {
-            try {
-                prop.load(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("property file '" + BUNDLE_NAME + "' not found in the classpath");
-        }
-
-        TESTINGDIRECTORY = prop.getProperty("logdirectory");
-
-
-
-
+        TESTINGDIRECTORY=directory.get();
     }
+
 
 
 }

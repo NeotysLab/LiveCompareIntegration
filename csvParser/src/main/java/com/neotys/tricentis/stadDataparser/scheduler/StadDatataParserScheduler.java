@@ -24,11 +24,11 @@ public class StadDatataParserScheduler {
 
     @Scheduled(cron="1 * * * * *")
     public void generateNavigationParsing() throws StadDataConfigExceptin {
-        StadDataConfig config = new StadDataConfig();
         try {
-            init();
+            StadDataConfig config = new StadDataConfig();
+
             logger.info("Starting log parsing task");
-            logservice.setDirPath(testingdirectory);
+            logservice.setDirPath(config.getTESTINGDIRECTORY());
             logservice.scanForLogFiles();
             logger.info("Log parsing finished");
         } catch(StadDataConfigExceptin e)
@@ -39,13 +39,7 @@ public class StadDatataParserScheduler {
         }
     }
 
-    private void init() throws StadDataConfigExceptin {
-        Optional<String> directory= Optional.ofNullable(System.getenv(SECRET_DIR)).filter(o->!o.isEmpty());
-        if(!directory.isPresent())
-            throw new StadDataConfigExceptin("The directory environment variable is missing");
 
-        testingdirectory=directory.get();
-    }
 
 
 }

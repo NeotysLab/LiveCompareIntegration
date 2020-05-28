@@ -9,7 +9,6 @@ public class WorkloadParserConfig {
     private static double ORDERRATIO;
     private static double HITRATIO;
     private static double ACCEPTABLERATIO;
-    private static final String BUNDLE_NAME = "navigation.properties";
     private static int MINNAVIGATIONSIZE;
     private static long MAXMILLISECONDSBETWEENREQUESTS;
     private static double ACCEPTABLERATIOMID;
@@ -55,7 +54,7 @@ public class WorkloadParserConfig {
     }
     private  void initConnector()
     {
-        String port;
+        /*String port;
 
         Properties prop = new Properties();
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(BUNDLE_NAME);
@@ -78,6 +77,6 @@ public class WorkloadParserConfig {
         MINNAVIGATIONSIZE=Integer.parseInt(prop.getProperty("MinNavigationsize"));
         MAXMILLISECONDSBETWEENREQUESTS=Long.parseLong(prop.getProperty("MaxMilliSecondsBetweenRequests"));
         ACCEPTABLERATIOMID=Double.valueOf(prop.getProperty("AcceptableRatioForMidCharacter"));
-        STATICEXPRESSION=prop.getProperty("staticsregularExpression");
+        STATICEXPRESSION=prop.getProperty("staticsregularExpression");*/
     }
 }

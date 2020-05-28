@@ -17,9 +17,9 @@
         <tag>0.1</tag>
         <dockerimage>docker.io/hrexed/neoload_livecomworkloadparser</dockerimage>
         <port>8080</port>
-        <MongoUser></MongoUser>
-        <MongoPassword></MongoPassword>
-        <MongoHost></MongoHost>
+        <MongoUser>YOUUSER</MongoUser>
+        <MongoPassword>YOURPASSWORD</MongoPassword>
+        <MongoHost>YOURHOST</MongoHost>
         <MongoPort>27017</MongoPort>
         <MongoDatabase>LiveCompareParser</MongoDatabase>
         <logFolder>/opt/WorkLoadParser/log</logFolder>

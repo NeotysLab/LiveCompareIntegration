@@ -5,7 +5,7 @@ services:
     image: hrexed/neoload_livecomworkloadparser:latest
     container_name: workloadparser
     volumes:
-      - /opt/workloadparser/log:/opt/WorkLoadParser/log
+    - /opt/workloadparser/log:/opt/WorkLoadParser/log
     ports:
     - "8081:8081"
     environment:
@@ -15,14 +15,16 @@ services:
     - MONGOPORT=27017
     - MONGOUSER= <MONGOUSER>
     - MONGOPASSWORD= <MONGOPASSWORD>
+    depends_on:
+    - mongodb
     networks:
-      - perf_network
+    - perf_network
   csvParser:
     image: hrexed/neoload_livecompareparser:latest
     container_name: csvparser
     volumes:
-      - /opt/csvParser/input:/opt/csvParser/input
-      - /opt/csvParser/log:/opt/csvParser/log
+    - /opt/csvParser/input:/opt/csvParser/input
+    - /opt/csvParser/log:/opt/csvParser/log
     ports:
     - "8080:8080"
     environment:
@@ -33,22 +35,25 @@ services:
     - MONGOPORT=27017
     - MONGOUSER= <MONGOUSER>
     - MONGOPASSWORD= <MONGOPASSWORD>
+    depends_on:
+    - mongodb
     networks:
-      - perf_network
+    - perf_network
   mongodb:
     image: mongo:4.0
     environment:
-      - MONGO_INITDB_DATABASE=LiveCompareParser
-      - AUTH=yes
-      - MONGO_INITDB_ROOT_USERNAME=<MONGOUSER>
-      - MONGO_INITDB_ROOT_PASSWORD=<MONGOPASSWORD>
+    - MONGO_INITDB_DATABASE=LiveCompareParser
+    - AUTH=yes
+    - MONGO_INITDB_ROOT_USERNAME=<MONGOUSER>
+    - MONGO_INITDB_ROOT_PASSWORD=<MONGOPASSWORD>
     ports:
-      - 27017:27017
+    - "27017:27017"
     volumes:
-      - /opt/mongo/data/:/data/db
-      - /opt/mongo/config/:/data/configdb
+    - /opt/mongo/data/:/data/db
+    - /opt/mongo/config/:/data/configdb
+    - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
-      - perf_network
+    - perf_network
 
 networks:
   perf_network:
