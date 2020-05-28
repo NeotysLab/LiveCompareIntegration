@@ -23,6 +23,11 @@
         <csvFolder>/opt/csvParser/input</csvFolder>
         <logFolder>/opt/csvParser/log</logFolder>
         <loggin-level>DEBUG</loggin-level>
+        <MongoUser></MongoUser>
+        <MongoPassword></MongoPassword>
+        <MongoHost></MongoHost>
+        <MongoPort>27017</MongoPort>
+        <MongoDatabase>LiveCompareParser</MongoDatabase>
     </properties>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
@@ -113,6 +118,11 @@
                             <log-level>${loggin-level}</log-level>
                             <csvFolder>${csvFolder}</csvFolder>
                             <PORT>${port}</PORT>
+                            <MONGOHOST>${MongoHost}</MONGOHOST>
+                            <MONGOPORT>${MongoPort}</MONGOPORT>
+                            <DATABASENAME>${MongoDatabase}</DATABASENAME>
+                            <MONGOUSER>${MongoUser}</MONGOUSER>
+                            <MONGOPASSWORD>${MongoPassword}</MONGOPASSWORD>
                         </environment>
                         <volumes>
                             <volume>${csvFolder}</volume>

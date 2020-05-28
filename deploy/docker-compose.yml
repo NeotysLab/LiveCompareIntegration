@@ -11,15 +11,15 @@ services:
     environment:
     - PORT=8081
     - log-level=DEBUG
+    - MONGOHOST= mongodb
+    - MONGOPORT=27017
+    - MONGOUSER= <MONGOUSER>
+    - MONGOPASSWORD= <MONGOPASSWORD>
     networks:
       - perf_network
-
   csvParser:
     image: hrexed/neoload_livecompareparser:latest
     container_name: csvparser
-    build:
-      context: .
-      dockerfile: ./build/Dockerfile.log_parser
     volumes:
       - /opt/csvParser/input:/opt/csvParser/input
       - /opt/csvParser/log:/opt/csvParser/log
@@ -29,6 +29,10 @@ services:
     - PORT=8080
     - log-level=DEBUG
     - csvFolder=/opt/csvParser/log
+    - MONGOHOST= mongodb
+    - MONGOPORT=27017
+    - MONGOUSER= <MONGOUSER>
+    - MONGOPASSWORD= <MONGOPASSWORD>
     networks:
       - perf_network
   mongodb:
@@ -36,11 +40,8 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=LiveCompareParser
       - AUTH=yes
-      - DATABASENAME=LiveCompareParser
-      - HOST= <YOURHOST>
-      - PORT=27017
-      - USER= <MONGOUSER>
-      - PASSWORD= <MONGOPASSWORD>
+      - MONGO_INITDB_ROOT_USERNAME=<MONGOUSER>
+      - MONGO_INITDB_ROOT_PASSWORD=<MONGOPASSWORD>
     ports:
       - 27017:27017
     volumes:
