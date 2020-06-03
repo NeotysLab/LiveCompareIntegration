@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableAutoConfiguration
 @Import(com.neotys.tricentis.MongoDB.config.MongoConfig.class)
-@EntityScan(basePackages = {"com.neotys.tricentis.MongoDB"})
+@EntityScan(basePackages = {"com.neotys.tricentis"})
 @EnableMongoRepositories( {"com.neotys.tricentis.MongoDB.data.repository"})
 @ComponentScan({"com.neotys.tricentis.MongoDB.DatabaseConnector.data.repository","com.neotys.tricentis.stadDataparser.scheduler", "com.neotys.tricentis.stadDataparser.parser"})
 public class ParseLog implements CommandLineRunner {

@@ -28,6 +28,7 @@ public class StadDatataParserScheduler {
             StadDataConfig config = new StadDataConfig();
 
             logger.info("Starting log parsing task");
+            logger.info("Parsing directory "+config.getTESTINGDIRECTORY());
             logservice.setDirPath(config.getTESTINGDIRECTORY());
             logservice.scanForLogFiles();
             logger.info("Log parsing finished");

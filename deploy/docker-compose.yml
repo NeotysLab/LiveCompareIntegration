@@ -10,7 +10,7 @@ services:
     volumes:
     - /opt/mongo/data/:/data/db
     - /opt/mongo/config/:/data/configdb
-    - /opt/logs:/logs
+    - /opt/logs/:/logs
     - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
     - perf_network

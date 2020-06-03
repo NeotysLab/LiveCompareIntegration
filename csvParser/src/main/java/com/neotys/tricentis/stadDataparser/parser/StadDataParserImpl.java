@@ -81,6 +81,7 @@ public class StadDataParserImpl implements StadDataParserService {
     {
         Path directory= Paths.get(dirPath);
         try {
+            logger.debug("Looking from files in "+dirPath);
             Stream<Path> streamOfLogFiles = Files.find(directory,1,(path, basicFileAttributes) -> path.getFileName().toString().endsWith(LOGEXTENSION));
             streamOfLogFiles.parallel().forEach(path-> {
                 try {

@@ -13,9 +13,9 @@ import java.util.List;
 
 public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterface {
 
-    private static final String LOGPARSERTYPE="LOGPARSER";
-    private static final String NAVIGATIONPARSERTYPE="NAVIGATIONPARSER";
-    private static final String URLMATCHPARSERTYPE="URLMATCHPARSER";
+    private static final String STADPARSER ="STADPARSER";
+    private static final String TCODEPARSER ="TCODEPARSER";
+    private static final String URLMATCHPARSERTYPE="USERPATHPARSER";
 
 
     private final  MongoOperations operations;
@@ -24,6 +24,7 @@ public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterf
     public WorkflowRepositoryInterfaceImpl(MongoOperations mongoOps) {
 
         this.operations = mongoOps;
+
     }
 
     public long getLogTimeFromTime(String type) {
@@ -43,26 +44,27 @@ public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterf
         Update update = new Update();
         update.set("date",date );
 
-       UpdateResult result=operations.updateFirst(query,update,Worflow.class);
+        UpdateResult result=operations.updateFirst(query,update,Worflow.class);
 
         return date;
 
     }
     @Override
     public long getLogParerTime() {
-        return getLogTimeFromTime(LOGPARSERTYPE);
+        return getLogTimeFromTime(STADPARSER);
 
     }
     public long createParserTime(String type)
     {
         long date=System.currentTimeMillis();
         Worflow worflow= new Worflow(date,type);
+
         operations.save(worflow);
         return date;
     }
     @Override
     public long getNavigationParserTime() {
-        return getLogTimeFromTime(NAVIGATIONPARSERTYPE);
+        return getLogTimeFromTime(TCODEPARSER);
     }
 
     @Override
@@ -72,12 +74,12 @@ public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterf
 
     @Override
     public long updateLogParerTime() {
-        return updateLogTimeFromTime(LOGPARSERTYPE);
+        return updateLogTimeFromTime(STADPARSER);
     }
 
     @Override
     public long updateNavigationParserTime() {
-        return updateLogTimeFromTime(NAVIGATIONPARSERTYPE);
+        return updateLogTimeFromTime(TCODEPARSER);
     }
 
     @Override

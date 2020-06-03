@@ -34,4 +34,6 @@ public class Constants {
     //'M'          - SMTP
     //
     //'F'            - FTP
+
+    public static final double MAX_RATIO=0.6;
 }

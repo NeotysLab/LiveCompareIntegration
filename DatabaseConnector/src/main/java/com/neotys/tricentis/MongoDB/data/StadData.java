@@ -10,6 +10,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Document(collection = "StadData")
@@ -35,6 +37,17 @@ public class StadData {
     private long startdatems;
     @Indexed
     private long enddatems;
+
+    @Indexed
+    private int hour;
+    @Indexed
+    private int minute;
+    @Indexed
+    private int second;
+    private int day;
+    private int month;
+    private int year;
+
     private String startdate;
     private String startTime ;
     private String endDate ;
@@ -51,7 +64,81 @@ public class StadData {
     private String account;
     private String dynpron;
 
+    public ObjectId getId() {
+        return id;
+    }
 
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public long getStartdatems() {
+        return startdatems;
+    }
+
+    public void setStartdatems(long startdatems) {
+        this.startdatems = startdatems;
+    }
+
+    public long getEnddatems() {
+        return enddatems;
+    }
+
+    public void setEnddatems(long enddatems) {
+        this.enddatems = enddatems;
+    }
+
+    public int getHour() {
+        return hour;
+    }
+
+    public void setHour(int hour) {
+        this.hour = hour;
+    }
+
+    public int getMinute() {
+        return minute;
+    }
+
+    public void setMinute(int minute) {
+        this.minute = minute;
+    }
+
+    public int getSecond() {
+        return second;
+    }
+
+    public void setSecond(int second) {
+        this.second = second;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public void setStartdate(String startdate) {
+        this.startdate = startdate;
+    }
 
     public String get_requestid() { return id.toHexString(); }
     public void set_requestid(ObjectId _id) { this.id = _id; }
@@ -200,10 +287,27 @@ public class StadData {
         this.dynpron = dynpron;
         this.startdatems=convertDate(startdate,startTime);
         this.enddatems=convertDate(endDate,endTime);
+        ZonedDateTime startDateFormat;
+        startDateFormat=convert2ZoneDate(stardate,startTime);
+        this.hour=startDateFormat.getHour();
+        this.minute=startDateFormat.getMinute();
+        this.second=startDateFormat.getSecond();
+        this.day=startDateFormat.getDayOfMonth();
+        this.month=startDateFormat.getDayOfMonth();
+        this.year=startDateFormat.getYear();
+        this.dateindex=new Date();
+    }
+
+    private ZonedDateTime convert2ZoneDate(String date, String time) throws ParseException {
+        String globaldate=date+"T"+time+"Z";
+        DateFormat m_ISO8601Local = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        Date result=m_ISO8601Local.parse(globaldate);
+        return ZonedDateTime.ofInstant(result.toInstant(),
+                ZoneId.systemDefault());
     }
 
     private long convertDate(String date, String time) throws ParseException {
-        String globaldate=date+"'T'"+time+"'Z'";
+        String globaldate=date+"T"+time+"Z";
         DateFormat m_ISO8601Local = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         Date result=m_ISO8601Local.parse(globaldate);
         return result.getTime();

@@ -1,5 +1,9 @@
 package com.neotys.tricentis.MongoDB.data.repository;
 
+import com.neotys.tricentis.MongoDB.aggregate.TcodeUsage;
+import com.neotys.tricentis.MongoDB.aggregate.TransactionPerHour;
+import com.neotys.tricentis.MongoDB.aggregate.TransactionUsage;
+import com.neotys.tricentis.MongoDB.aggregate.UserSession;
 import com.neotys.tricentis.MongoDB.data.StadData;
 
 import java.util.List;
@@ -13,4 +17,12 @@ public interface StadDataRepositoryCustom {
 
 
     void dropCollectionStadData();
+
+    List<UserSession> getUserSessionFromdate(long date);
+
+    List<TcodeUsage> getTcodeUsagefromDate(long start, long end);
+
+    List<TransactionUsage> getTransactionUsageFromDate(long start, long end);
+
+    List<TransactionPerHour> getTransactionPerHourFromDate(long start, long end);
 }
