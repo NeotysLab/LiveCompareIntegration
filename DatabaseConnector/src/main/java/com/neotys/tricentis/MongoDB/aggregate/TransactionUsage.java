@@ -4,11 +4,39 @@ public class TransactionUsage {
     int hour;
     int minute;
     int numberofcalls;
+    int day,month,year;
 
-    public TransactionUsage(int hour, int minute, int numberofcalls) {
+    public TransactionUsage(int hour, int minute, int numberofcalls,int day,int month,int year) {
         this.hour = hour;
         this.minute = minute;
         this.numberofcalls = numberofcalls;
+        this.day=day;
+        this.month=month;
+        this.year=year;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
     }
 
     public int getHour() {

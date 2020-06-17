@@ -7,10 +7,20 @@ import java.util.List;
 public class UserSession {
     String account;
     List<Step> listofSession;
+    long startdatems;
 
-    public UserSession(String account, List<Step> listofSession) {
+    public UserSession(String account, List<Step> listofSession,long startdatems) {
         this.account = account;
         this.listofSession = listofSession;
+        this.startdatems=startdatems;
+    }
+
+    public long getStartdatems() {
+        return startdatems;
+    }
+
+    public void setStartdatems(long startdatems) {
+        this.startdatems = startdatems;
     }
 
     public String getAccount() {

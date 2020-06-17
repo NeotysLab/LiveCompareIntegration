@@ -16,6 +16,7 @@ import java.nio.charset.MalformedInputException;
 import java.nio.file.*;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 @Service("StadDataParserImpl")
@@ -52,9 +53,9 @@ public class StadDataParserImpl implements StadDataParserService {
 
     }
 
-    private void parseLogFile(Path logileName) throws UncheckedIOException,MalformedInputException,IOException {
+    private void parseLogFile(Path logileName, Date executiondate) throws UncheckedIOException,MalformedInputException,IOException {
 
-        parseLogFileToList(logileName).forEach(data->storeInDb(data));
+        parseLogFileToList(logileName).forEach(data->storeInDb(data,executiondate));
         Path tonename=FileSystems.getDefault().getPath(logileName.toAbsolutePath()+RENAMEEXTENSION);
         try {
             Files.move(logileName, tonename);
@@ -80,13 +81,17 @@ public class StadDataParserImpl implements StadDataParserService {
     public void scanForLogFiles()
     {
         Path directory= Paths.get(dirPath);
+        AtomicBoolean filescanned= new AtomicBoolean(false);
+        Date executiondate=new Date();
+
         try {
             logger.debug("Looking from files in "+dirPath);
             Stream<Path> streamOfLogFiles = Files.find(directory,1,(path, basicFileAttributes) -> path.getFileName().toString().endsWith(LOGEXTENSION));
             streamOfLogFiles.parallel().forEach(path-> {
                 try {
                     logger.info("Scanning file" +path.toString());
-                    parseLogFile(path);
+                     parseLogFile(path,executiondate);
+                     filescanned.set(true);
 
                 }
                 catch(UncheckedIOException e)
@@ -110,13 +115,14 @@ public class StadDataParserImpl implements StadDataParserService {
         }
         finally {
             try {
-                final StadDataTask task = new StadDataTask(mongoOperation, workflowRepositoryInterfaceCustom);
-                long date=task.getLasParserTime();
-                if (date == 0) {
-                    date= task.createParserTime();
+                if(filescanned.get()) {
+                    final StadDataTask task = new StadDataTask(mongoOperation, workflowRepositoryInterfaceCustom);
+                    long date = task.getLasParserTime();
+                    if (date == 0) {
+                        date = task.createParserTime(executiondate);
+                    } else
+                        date = task.UpdateParserTime(executiondate);
                 }
-                else
-                    date=task.UpdateParserTime();
             }
             catch(Exception e)
             {
@@ -125,11 +131,12 @@ public class StadDataParserImpl implements StadDataParserService {
         }
     }
 
-    private void storeInDb(StadDataraw data)  {
+    private void storeInDb(StadDataraw data, Date executiondate)  {
         logger.debug(data.getStardate()+" time:"+ data.getStartTime() +" tcode:"+data.getTcode()+" user :"+data.getAccount());
         StadData stadData= null;
         try {
-            stadData = new StadData(data.getServer(),data.getStardate(),data.getStartTime(),data.getEndDate(),data.getEndTime(),data.getTcode(), data.getTaskType(),data.getResponseTime(),data.getCputime(),data.getQueueTime(),data.getUsedBytes(),data.getAccount(),data.getDynpron());
+            stadData = new StadData(data.getServer(),data.getStardate(),data.getStartTime(),data.getEndDate(),data.getEndTime(),data.getTcode(), data.getTaskType(),data.getResponseTime(),data.getCputime(),data.getQueueTime(),data.getUsedBytes(),data.getAccount(),data.getDynpron(),data.getReport());
+            stadData.setDateindex(executiondate);
             mongoOperation.save(stadData);
         } catch (ParseException e) {
             logger.error("Parsing error- conversion issue",e);

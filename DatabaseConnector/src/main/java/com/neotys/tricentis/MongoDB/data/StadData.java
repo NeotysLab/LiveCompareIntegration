@@ -63,6 +63,9 @@ public class StadData {
     @Indexed
     private String account;
     private String dynpron;
+    private String report;
+
+
 
     public ObjectId getId() {
         return id;
@@ -271,11 +274,12 @@ public class StadData {
         this.dynpron = dynpron;
     }
 
-    public StadData(String server, String stardate, String startTime, String endDate, String endTime, String tcode, String taskType, long responseTime, long cputime, long queueTime, long usedBytes, String account, String dynpron) throws ParseException {
+    public StadData(String server, String stardate, String startTime, String endDate, String endTime, String tcode, String taskType, long responseTime, long cputime, long queueTime, long usedBytes, String account, String dynpron,String report) throws ParseException {
         this.server = server;
         this.startdate = stardate;
         this.startTime = startTime;
         this.endDate = endDate;
+        this.report=report;
         this.endTime = endTime;
         this.tcode = tcode;
         this.taskType = taskType;
@@ -293,9 +297,17 @@ public class StadData {
         this.minute=startDateFormat.getMinute();
         this.second=startDateFormat.getSecond();
         this.day=startDateFormat.getDayOfMonth();
-        this.month=startDateFormat.getDayOfMonth();
+        this.month=startDateFormat.getMonthValue();
         this.year=startDateFormat.getYear();
         this.dateindex=new Date();
+    }
+
+    public String getReport() {
+        return report;
+    }
+
+    public void setReport(String report) {
+        this.report = report;
     }
 
     private ZonedDateTime convert2ZoneDate(String date, String time) throws ParseException {

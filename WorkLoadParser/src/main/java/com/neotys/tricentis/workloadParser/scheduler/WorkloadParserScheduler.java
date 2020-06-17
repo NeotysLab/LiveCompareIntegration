@@ -21,9 +21,8 @@ public class WorkloadParserScheduler {
         WorkloadParserConfig config=new WorkloadParserConfig();
         try {
             logger.info("task started");
-           // parserservice.generateStats(config.getORDERRATIO(),config.getHITRATIO(),config.getACCEPTABLERATIO(),config.getMINNAVIGATIONSIZE(),config.getMAXMILLISECONDSBETWEENREQUESTS(),config.getACCEPTABLERATIOMID(),config.getSTATICEXPRESSION());
-         //   parserservice.parseNavigation(config.getResultPath(),config.getORDERRATIO(),config.getHITRATIO(),config.getACCEPTABLERATIO(),config.getMINNAVIGATIONSIZE(),config.getMAXMILLISECONDSBETWEENREQUESTS(),config.getACCEPTABLERATIOMID(),config.getSTATICEXPRESSION());
-           // parserservice.generateaggregate(config.getORDERRATIO(),config.getHITRATIO(),config.getACCEPTABLERATIO(),config.getMINNAVIGATIONSIZE(),config.getMAXMILLISECONDSBETWEENREQUESTS(),config.getACCEPTABLERATIOMID(),config.getSTATICEXPRESSION());
+             parserservice.initService();
+             parserservice.generateUserSession();
             logger.info("task ended");
         } catch (Exception e) {
             logger.error("error during the parsing ",e);

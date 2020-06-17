@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
+import java.util.Date;
 import java.util.List;
 
 public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterface {
@@ -38,15 +39,15 @@ public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterf
             return 0;
 
     }
-    public long updateLogTimeFromTime(String type) {
-        long date=System.currentTimeMillis();
+    public long updateLogTimeFromTime(String type, Date executiondate) {
+
         Query query = new Query(Criteria.where("type").is(type));
         Update update = new Update();
-        update.set("date",date );
+        update.set("date",executiondate.getTime() );
 
         UpdateResult result=operations.updateFirst(query,update,Worflow.class);
 
-        return date;
+        return executiondate.getTime();
 
     }
     @Override
@@ -54,16 +55,14 @@ public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterf
         return getLogTimeFromTime(STADPARSER);
 
     }
-    public long createParserTime(String type)
+    public long createParserTime(String type, Date executiondate)
     {
-        long date=System.currentTimeMillis();
-        Worflow worflow= new Worflow(date,type);
-
+        Worflow worflow= new Worflow(executiondate.getTime(),type);
         operations.save(worflow);
-        return date;
+        return executiondate.getTime();
     }
     @Override
-    public long getNavigationParserTime() {
+    public long getTcodeParserTime() {
         return getLogTimeFromTime(TCODEPARSER);
     }
 
@@ -73,17 +72,17 @@ public class WorkflowRepositoryInterfaceImpl implements WorkflowRepositoryInterf
     }
 
     @Override
-    public long updateLogParerTime() {
-        return updateLogTimeFromTime(STADPARSER);
+    public long updateLogParerTime(Date executiondate) {
+        return updateLogTimeFromTime(STADPARSER,executiondate);
     }
 
     @Override
-    public long updateNavigationParserTime() {
-        return updateLogTimeFromTime(TCODEPARSER);
+    public long updateTcodeParserTime(Date executiondate) {
+        return updateLogTimeFromTime(TCODEPARSER, executiondate);
     }
 
     @Override
-    public long updateUrlMatchParserTime() {
-        return updateLogTimeFromTime(URLMATCHPARSERTYPE);
+    public long updateUrlMatchParserTime(Date executiondate) {
+        return updateLogTimeFromTime(URLMATCHPARSERTYPE, executiondate);
     }
 }

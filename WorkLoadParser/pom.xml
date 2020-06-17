@@ -75,6 +75,18 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>2.2.7.RELEASE</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jfree/jfreechart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.19</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -99,7 +111,7 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>1.4.0</version>
+                <version>2.4.0</version>
                 <configuration>
                     <from>
                         <image>gcr.io/distroless/java:8</image>
@@ -112,12 +124,22 @@
                             <tag>latest</tag>
                         </tags>
                     </to>
+                    <extraDirectories>
+                    <paths>
+                        <path>
+                            <from>properties</from>
+                            <into>/etc/java-8-openjdk/</into>
+                        </path>
+                    </paths>
+                    </extraDirectories>
                     <allowInsecureRegistries>true</allowInsecureRegistries>
                     <container>
                         <ports>
                             <port>${port}</port>
-
                         </ports>
+                        <jvmFlags>
+                            <jvmFlag>-Djava.awt.headless=true</jvmFlag>
+                        </jvmFlags>
                         <environment>
                             <log-level>${loggin-level}</log-level>
                             <MONGOHOST>${MongoHost}</MONGOHOST>

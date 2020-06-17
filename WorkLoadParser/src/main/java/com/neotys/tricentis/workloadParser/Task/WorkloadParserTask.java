@@ -6,12 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoOperations;
 
+import java.util.Date;
+
 public class WorkloadParserTask {
-    private final String type="NAVIGATIONPARSER";
+    private final String type="TCODEPARSER";
     private final String typeurlMatch="URLMATCHPARSER";
     private long timestamp;
     private MongoOperations mongoOperation;
-    private static final String LOGPARSERTYPE="LOGPARSER";
+    private static final String LOGPARSERTYPE="STADPARSER";
     private WorkflowRepositoryCustom repository;
     private static final Logger logger =LoggerFactory.getLogger(WorkloadParserTask.class);
 
@@ -20,15 +22,13 @@ public class WorkloadParserTask {
         this.repository=worflowrepo;
     }
 
-
-
-
     public long getLasLogParserTime()
     {
         //return getParserTime(LOGPARSERTYPE);
 
         return repository.getLogParerTime();
     }
+
 
     public long getLasUrlMatcherTime()
     {
@@ -37,30 +37,30 @@ public class WorkloadParserTask {
         return repository.getUrlMatchParserTime();
     }
 
-    public long getLasNavigationParserTime()
+    public long getLasTcodeParserTime()
     {
         //return getParserTime(LOGPARSERTYPE);
 
-        return repository.getNavigationParserTime();
+        return repository.getTcodeParserTime();
     }
-    public long createUrlParserTime()
+    public long createUrlParserTime(Date executiondate)
     {
-        return repository.createParserTime(typeurlMatch);
-    }
-
-    public long updateUrlParserTime()
-    {
-        return repository.updateUrlMatchParserTime();
-
-    }
-    public long createParserTime()
-    {
-       return repository.createParserTime(type);
+        return repository.createParserTime(typeurlMatch, executiondate);
     }
 
-    public long updateParserTime()
+    public long updateUrlParserTime(Date executiondate)
     {
-        return repository.updateNavigationParserTime();
+        return repository.updateUrlMatchParserTime(executiondate);
+
+    }
+    public long createTcodeParserTime(Date executiondate)
+    {
+       return repository.createParserTime(type, executiondate);
+    }
+
+    public long updateTcodeParserTime(Date executiondate)
+    {
+        return repository.updateTcodeParserTime(executiondate);
 
 
     }

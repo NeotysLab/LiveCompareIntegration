@@ -19,12 +19,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @Configuration
-//@EnableScheduling
+@EnableScheduling
 @EnableAutoConfiguration
 @Import(com.neotys.tricentis.MongoDB.config.MongoConfig.class)
 @EntityScan(basePackages = {"com.neotys.tricentis"})
 @EnableMongoRepositories( {"com.neotys.tricentis.MongoDB.data.repository"})
-@ComponentScan({"com.neotys.tricentis.MongoDB.DatabaseConnector.data.repository", "com.neotys.tricentis.workloadParser.service","com.neotys.tricentis.workloadParser.controller"})
+@ComponentScan({"com.neotys.tricentis.MongoDB.DatabaseConnector.data.repository","com.neotys.tricentis.workloadParser.scheduler", "com.neotys.tricentis.workloadParser.service","com.neotys.tricentis.workloadParser.controller"})
 public class WorkLoadParserApp implements CommandLineRunner {
     private static final Logger logger =LoggerFactory.getLogger(WorkLoadParserApp.class);
 
@@ -33,7 +33,7 @@ public class WorkLoadParserApp implements CommandLineRunner {
     }
 
     @Bean
-    CommandLineRunner init(WorkflowRepositoryCustom repository, StadDataRepository stadDataRepository) {
+    CommandLineRunner init(WorkflowRepositoryCustom repository, StadDataRepository stadDataRepository,UserSAPSessionRepository userSAPSessionRepository,TcodeUsagePerMinRepository tcodeUsagePerMinRepository) {
         return args -> {
             logger.debug("Repository: " + repository);
         };
@@ -54,8 +54,5 @@ public class WorkLoadParserApp implements CommandLineRunner {
        //
     }
 
-    private void init()
-    {
 
-    }
 }

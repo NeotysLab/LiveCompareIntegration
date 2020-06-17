@@ -1,18 +1,20 @@
 package com.neotys.tricentis.MongoDB.data.repository;
 
+import java.util.Date;
+
 public interface WorkflowRepositoryInterface {
 
         long getLogParerTime();
 
-        long getNavigationParserTime();
+        long getTcodeParserTime();
 
         long getUrlMatchParserTime();
 
-        long updateLogParerTime();
+        long updateLogParerTime(Date executiondate);
 
-        long updateNavigationParserTime();
+        long updateTcodeParserTime(Date executiondate);
 
-        long createParserTime(String type);
-        long updateUrlMatchParserTime();
+        long createParserTime(String type, Date executiondate);
+        long updateUrlMatchParserTime(Date executiondate);
 
 }

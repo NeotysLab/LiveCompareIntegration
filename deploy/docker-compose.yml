@@ -3,47 +3,33 @@ version: '3.3'
 services:
   mongodb:
     image: mongo:latest
-    command: ['--logpath', '/logs/mongo.log']
     container_name: mongodb
     ports:
     - "27017:27017"
     volumes:
-    - /opt/mongo/data/:/data/db
-    - /opt/mongo/config/:/data/configdb
-    - /opt/logs/:/logs
+    - /home/ubuntu/mongo/data/:/data/db
+    - /home/ubuntu/mongo/config/:/data/configdb
     - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+    - MONGO_INITDB_DATABASE=LiveCompareParser
+    - AUTH=yes
+    - MONGO_INITDB_ROOT_USERNAME=<YOURUSER>
+    - MONGO_INITDB_ROOT_PASSWORD=<YOURPASSWORD>
     networks:
     - perf_network
-  mongoClientInitDB:
-    image: mongo:latest
-    container_name: mongoClientInitDB
-    links:
-    - mongodb:mongo
-    command: mongo --host mongo --eval  "use LiveCompareParser;"
-    depends_on:
-    - mongodb
-  mongoClientInitUser:
-    image: mongo:latest
-    container_name: mongoClientInitUser
-    links:
-    - mongodb:mongo
-    command: mongo --host mongo --eval  "db.getSiblingDB('LiveCompareParser').createUser({user:'<YOUR USER>', pwd:'<YOUR PASSWORD>', roles:[{role:'readWrite',db:'LiveCompareParser'}]});"
-    depends_on:
-    - mongoClientInitDB
   workload_parser:
     image: hrexed/neoload_livecomworkloadparser:latest
     container_name: workloadparser
     volumes:
-    - /opt/workloadparser/log:/opt/WorkLoadParser/log
+    - /home/ubuntu/workloadparser/log:/opt/WorkLoadParser/log
     ports:
-    - "8081:8081"
+    - "8081:8080"
     environment:
-    - PORT=8081
     - log-level=DEBUG
     - MONGOHOST=mongodb
     - MONGOPORT=27017
-    - MONGOUSER=<YOUR USER>
-    - MONGOPASSWORD=<YOUR PASSWORD>
+    - MONGOUSER=<YOURUSER>
+    - MONGOPASSWORD=<YOURPASSWORD>
     depends_on:
     - mongodb
     networks:
@@ -52,18 +38,18 @@ services:
     image: hrexed/neoload_livecompareparser:latest
     container_name: csvparser
     volumes:
-    - /opt/csvParser/input:/opt/csvParser/input
-    - /opt/csvParser/log:/opt/csvParser/log
+    - /home/ubuntu/csvParser/input:/opt/csvParser/input
+    - /home/ubuntu/csvParser/log:/opt/csvParser/log
     ports:
     - "8080:8080"
     environment:
     - PORT=8080
     - log-level=DEBUG
-    - csvFolder=/opt/csvParser/log
+    - csvFolder=/opt/csvParser/input
     - MONGOHOST=mongodb
     - MONGOPORT=27017
-    - MONGOUSER=<YOUR USER>
-    - MONGOPASSWORD=<YOUR PASSWORD>
+    - MONGOUSER=<YOURUSER>
+    - MONGOPASSWORD=<YOURPASSWORD>
     depends_on:
     - mongodb
     networks:

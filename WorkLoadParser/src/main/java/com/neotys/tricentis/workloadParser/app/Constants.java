@@ -35,5 +35,5 @@ public class Constants {
     //
     //'F'            - FTP
 
-    public static final double MAX_RATIO=0.6;
+    public static final double MAX_RATIO=0;
 }

@@ -3,6 +3,8 @@ package com.neotys.tricentis.stadDataparser.Task;
 import com.neotys.tricentis.MongoDB.data.repository.WorkflowRepositoryCustom;
 import org.springframework.data.mongodb.core.MongoOperations;
 
+import java.util.Date;
+
 
 public class StadDataTask {
     private final String type="STADPARSER";
@@ -27,14 +29,14 @@ public class StadDataTask {
 
     }
 
-    public long createParserTime()
+    public long createParserTime(Date executiondate)
     {
-        return repository.createParserTime(type);
+        return repository.createParserTime(type,executiondate);
     }
 
-    public long UpdateParserTime()
+    public long UpdateParserTime(Date executiondate)
     {
 
-            return repository.updateLogParerTime();
+            return repository.updateLogParerTime(executiondate);
     }
 }

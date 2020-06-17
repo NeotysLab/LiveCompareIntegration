@@ -20,9 +20,14 @@ public interface StadDataRepositoryCustom {
 
     List<UserSession> getUserSessionFromdate(long date);
 
+    List<TcodeUsage> getTcodeUsagefromDate(long start);
+
     List<TcodeUsage> getTcodeUsagefromDate(long start, long end);
 
     List<TransactionUsage> getTransactionUsageFromDate(long start, long end);
+    List<TransactionUsage> getTransactionUsageFromDate(long start);
 
     List<TransactionPerHour> getTransactionPerHourFromDate(long start, long end);
+    List<TransactionPerHour> getTransactionPerHourFromDate(long start);
+
 }

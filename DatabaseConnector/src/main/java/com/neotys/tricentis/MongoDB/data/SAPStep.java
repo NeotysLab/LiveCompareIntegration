@@ -1,7 +1,16 @@
-package com.neotys.tricentis.MongoDB.aggregate;
+package com.neotys.tricentis.MongoDB.data;
 
-public class Step {
+import com.neotys.tricentis.MongoDB.aggregate.Step;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Date;
+@Document(collection = "SAPStep")
+public class SAPStep {
+
+    @Indexed
     int hour;
+    @Indexed
     int minute;
     int second;
     int month;
@@ -10,12 +19,13 @@ public class Step {
     long responseTime;
     long cputime;
     long usedBytes;
+    @Indexed
     String dynpron;
+    @Indexed
     String tcode;
 
-    public Step(String tcode,int hour, int minute, int second, int month, int day, int year, long responseTime, long cputime, long usedBytes, String dynpron) {
+    public SAPStep(String tcode,int hour, int minute, int second, int month, int day, int year, long responseTime, long cputime, long usedBytes, String dynpron) {
         this.hour = hour;
-        this.tcode=tcode;
         this.minute = minute;
         this.second = second;
         this.month = month;
@@ -25,7 +35,24 @@ public class Step {
         this.cputime = cputime;
         this.usedBytes = usedBytes;
         this.dynpron = dynpron;
+
     }
+
+    public SAPStep(Step step)
+    {
+        this.hour=step.getHour();
+        this.minute=step.getMinute();
+        this.cputime=step.getCputime();
+        this.second=step.getSecond();
+        this.day=step.getDay();
+        this.month=step.getMonth();
+        this.dynpron=step.getDynpron();
+        this.responseTime=step.getResponseTime();
+        this.tcode=step.getTcode();
+        this.usedBytes=step.getUsedBytes();
+
+    }
+
 
     public String getTcode() {
         return tcode;
