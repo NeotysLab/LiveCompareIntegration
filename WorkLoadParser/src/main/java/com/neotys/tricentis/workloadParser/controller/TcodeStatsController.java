@@ -45,7 +45,7 @@ public class TcodeStatsController {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TcodeStatsController.class);
 
-
+    //#TODO look :https://www.highcharts.com/stock/demo/stock-tools-gui
     private TimeSeriesCollection getTimeSeriesCollectionFrom(List<TcodePerMin> tCodeUsagePerMins)
     {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm");
@@ -64,10 +64,7 @@ public class TcodeStatsController {
                                  String chartTitle = null;
                                  String xTitle = null;
 
-
-
-
-                                ts.add(regularTimePeriod, usage.getNumberOfCalls());
+                                 ts.add(regularTimePeriod, Integer.valueOf(usage.getNumberOfCalls()));
                              }
                              catch (ParseException e)
                              {

@@ -2,6 +2,7 @@ package com.neotys.tricentis.workloadParser.graph;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -111,6 +112,7 @@ public class GraphUtils {
         plot.setDomainCrosshairVisible(true);
         plot.setRangeCrosshairVisible(true);
 
+        plot.getRangeAxis().setStandardTickUnits(NumberAxis.createIntegerTickUnits());
         XYItemRenderer r = plot.getRenderer();
         if (r instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;

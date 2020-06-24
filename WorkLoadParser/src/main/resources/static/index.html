@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+    <title>Tcode Usage Per minute</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+</head>
+
+    <body >
+
+    <div style="text-align: center">
+        <form name="graph">
+        <table>
+            <tr>
+                <td>Select the date/time range :</td>
+                <td><input type="text" name="datetimes" /></td>
+            </tr>
+            <tr>
+                <td><input type="hidden" name="startdate" value=""> <input type="hidden" value="" name="enddate"> </td>
+                <td><input type=button value="Generate Workload" onclick="graphIt()"></td>
+            </tr>
+
+        <script>
+
+                $(function() {
+                  $('input[name="datetimes"]').daterangepicker({
+                    timePicker: true,
+                    timePicker24Hour: true,
+                    timePickerSeconds: true,
+                    startDate: moment().startOf('hour'),
+                    endDate: moment().startOf('hour').add(32, 'hour'),
+                    locale: {
+                      format: 'YYYY-MM-DD hh:mm'
+                    }
+                  }, function(start, end, label) {
+                        document.getElementsByName('startdate').value=start.format('YYYY-MM-DDTHH:mm:ss');
+                        document.getElementsByName('enddate').value=end.format('YYYY-MM-DDTHH:mm:ss');
+                        console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+                    });
+                });
+
+                function graphIt()
+                {
+                     var start=  document.getElementsByName('startdate').value;
+                     var end = document.getElementsByName('enddate').value;
+                     if(start=="")
+                     {
+                        alert("Please select a date");
+                        return 0;
+
+                    }
+                    else
+                    {
+                        //2020-04-27T10:00:00
+                        //2020-04-27T23:00:00Z"
+                        var url="/tcodeStatPerMinute?startDate="+start+"Z&endDate="+end+"Z";
+                        document.getElementById('tcodegraph').setAttribute('src',url);
+                        document.getElementById('tcodegraph').setAttribute('disabled','false');
+                    }
+                }
+
+        </script>
+
+            <tr>
+                <td colspan="2">
+                <img id="tcodegraph" disabled="true" src="/tcodeStatPerMinute?startDate=2020-04-27T10:00:00Z&endDate=2020-04-27T23:00:00Z"
+                                                  width=600 height=400 border=0 color=gray>
+
+                </td>
+            </tr>
+        </table>
+        </form>
+    </div>
+    </body>
+</html>
