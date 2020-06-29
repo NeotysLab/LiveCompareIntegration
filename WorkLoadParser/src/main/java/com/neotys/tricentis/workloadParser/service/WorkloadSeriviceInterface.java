@@ -6,4 +6,7 @@ public interface WorkloadSeriviceInterface   {
     void generateUserSession();
     void   initService();
 
+    void detectCommonPatern();
+
+
 }

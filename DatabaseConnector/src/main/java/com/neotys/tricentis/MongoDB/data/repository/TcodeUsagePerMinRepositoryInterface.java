@@ -9,4 +9,6 @@ public interface TcodeUsagePerMinRepositoryInterface {
     List<TCodeUsagePerMin> getTcodeUsagefromDate(long start, long end);
 
     List<TcodePerMin>  getTcodePerminfromDates(long start,long end);
+
+
 }

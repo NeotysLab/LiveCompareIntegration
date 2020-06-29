@@ -19,12 +19,15 @@ public class SAPStep {
     long responseTime;
     long cputime;
     long usedBytes;
+    long datesession;
     @Indexed
     String dynpron;
     @Indexed
     String tcode;
 
-    public SAPStep(String tcode,int hour, int minute, int second, int month, int day, int year, long responseTime, long cputime, long usedBytes, String dynpron) {
+    long thinktime;
+
+    public SAPStep(String tcode,int hour, int minute, int second, int month, int day, int year, long responseTime, long cputime, long usedBytes, String dynpron,long datesession) {
         this.hour = hour;
         this.minute = minute;
         this.second = second;
@@ -35,6 +38,7 @@ public class SAPStep {
         this.cputime = cputime;
         this.usedBytes = usedBytes;
         this.dynpron = dynpron;
+        this.datesession=datesession;
 
     }
 
@@ -50,9 +54,26 @@ public class SAPStep {
         this.responseTime=step.getResponseTime();
         this.tcode=step.getTcode();
         this.usedBytes=step.getUsedBytes();
+        this.datesession=step.getDatesession();
+        this.thinktime=step.getThinktime();
 
     }
 
+    public long getThinktime() {
+        return thinktime;
+    }
+
+    public void setThinktime(long thinktime) {
+        this.thinktime = thinktime;
+    }
+
+    public long getDatesession() {
+        return datesession;
+    }
+
+    public void setDatesession(long datesession) {
+        this.datesession = datesession;
+    }
 
     public String getTcode() {
         return tcode;

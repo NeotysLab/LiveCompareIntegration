@@ -63,14 +63,20 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
                             .append("second","$second")
                             .append("day","$day")
                             .append("month","$month")
+                            .append("datesession","$startdatems")
                             .append("year","$year")).as("listofSession")
                     .first("startdatems").as("startdatems")
                     .first("account").as("account");
-           SortOperation sortByPopAsc = sort(Sort.Direction.ASC, "startdatems");
+           UnwindOperation unwindOperation=unwind("listofSession");
 
+           SortOperation sortByPopAsc = sort(Sort.Direction.ASC, "listofSession.year","listofSession.month","listofSession.day","listofSession.hour","listofSession.minute","listofSession.second");
+           GroupOperation groupOperation=group("account")
+                                    .push("listofSession").as("listofSession")
+                                    .first("startdatems").as("startdatems")
+                                    .first("account").as("account");
 
             Aggregation aggregation = newAggregation(filterStates,
-                    groupByStateAndSumPop, sortByPopAsc);
+                    groupByStateAndSumPop, unwindOperation,sortByPopAsc,groupOperation);
             AggregationResults<UserSession> result = operations.aggregate(aggregation, StadData.class,UserSession.class);
 
            return result.getMappedResults();
