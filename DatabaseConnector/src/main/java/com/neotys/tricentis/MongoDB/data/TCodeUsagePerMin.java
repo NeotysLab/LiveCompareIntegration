@@ -16,12 +16,11 @@ public class TCodeUsagePerMin extends TcodeUsage {
     @Indexed//(name="dateindex")
     private Date dateindex;
 
-
-
-    public TCodeUsagePerMin(TcodeUsage tcodeUsage) {
+    public TCodeUsagePerMin(TcodeUsage tcodeUsage, Date extractordate) {
         super(tcodeUsage.getHour(), tcodeUsage.getMinute(), tcodeUsage.getTcode(), tcodeUsage.getNumberOfCalls(),tcodeUsage.getStartdatems(),tcodeUsage.getDay(),tcodeUsage.getMonth(),tcodeUsage.getYear());
         this.setRatio(tcodeUsage.getRatio());
-        this.dateindex=new Date();
+        this.dateindex=extractordate;
+
     }
 
 

@@ -1,16 +1,12 @@
 package com.neotys.tricentis.workloadParser.controller;
 
-import com.neotys.tricentis.MongoDB.aggregate.TcodePerMin;
-import com.neotys.tricentis.MongoDB.aggregate.TcodeUsage;
-import com.neotys.tricentis.MongoDB.aggregate.TransactionPerHour;
-import com.neotys.tricentis.MongoDB.aggregate.TransactionUsage;
+import com.neotys.tricentis.MongoDB.aggregate.*;
 import com.neotys.tricentis.MongoDB.data.TCodeUsagePerMin;
 import com.neotys.tricentis.MongoDB.data.UserSAPSession;
-import com.neotys.tricentis.MongoDB.data.repository.StadDataRepository;
-import com.neotys.tricentis.MongoDB.data.repository.StadDataRepositoryCustom;
-import com.neotys.tricentis.MongoDB.data.repository.TcodeUsagePerMinRepository;
-import com.neotys.tricentis.MongoDB.data.repository.UserSAPSessionRepository;
+import com.neotys.tricentis.MongoDB.data.repository.*;
 import com.neotys.tricentis.workloadParser.graph.GraphUtils;
+import com.neotys.tricentis.workloadParser.jsonDatamodel.Sankey;
+import com.neotys.tricentis.workloadParser.jsonDatamodel.Series;
 import com.neotys.tricentis.workloadParser.util.Converter;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.RegularTimePeriod;
@@ -42,10 +38,12 @@ public class TcodeStatsController {
     UserSAPSessionRepository userSAPSessionRepository;
     @Autowired
     TcodeUsagePerMinRepository tcodeUsagePerMinRepository;
+    @Autowired
+    NavigationStepRepository navigationStepRepository;
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TcodeStatsController.class);
 
-    //#TODO look :https://www.highcharts.com/stock/demo/stock-tools-gui
+    //#TODO look :https://www.highcharts.com/stock/demo/stock-tools-gui -> even better https://gojs.net/latest/samples/sankey.html
     private TimeSeriesCollection getTimeSeriesCollectionFrom(List<TcodePerMin> tCodeUsagePerMins)
     {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm");
@@ -80,6 +78,58 @@ public class TcodeStatsController {
                 );
 
         return dataset;
+    }
+
+    @GetMapping("/userFlow")
+    public ResponseEntity<Sankey> getUserFlow(String startDate, String endDate)
+    {   Sankey sankey = null;
+        HttpStatus responseCode=HttpStatus.OK;
+        try
+        {
+            long start = Converter.convertDate(startDate);
+            long end = Converter.convertDate(endDate);
+            List<SessionPath> sessionPathList=navigationStepRepository.getSessionPathFromDates(start,end);
+            sankey=new Sankey(sessionPathList);
+
+        }
+        catch (ParseException e)
+        {
+            logger.error("ParseException ",e);
+            throw new InputFormatException(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Technical error ",e);
+            responseCode = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        if(sankey!=null)
+        {
+            return new ResponseEntity<>(sankey, responseCode);
+        }
+        else
+            return null;
+    }
+
+    @GetMapping("/tcodeStatPerMin")
+    public ResponseEntity<Series> getTcodeUsagePerMin(String startDate, String endDate) {
+        HttpStatus responseCode = HttpStatus.OK;
+        Series series=null;
+        try {
+            long start = Converter.convertDate(startDate);
+            long end = Converter.convertDate(endDate);
+            List<TCodeUsagePerMin> tcodeUsageList=tcodeUsagePerMinRepository.getTcodeUsagefromDate(start,end);
+            series=new Series(tcodeUsageList);
+       }
+        catch (ParseException e)
+        {
+            logger.error("ParseException ",e);
+            throw new InputFormatException(e.getMessage());
+        }
+        catch (Exception e) {
+            logger.error("Technical error ",e);
+            responseCode = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return new ResponseEntity<>(series, responseCode);
     }
 
     @GetMapping("/tcodeStatPerMinute")

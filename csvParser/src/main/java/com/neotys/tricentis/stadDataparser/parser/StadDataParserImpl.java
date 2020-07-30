@@ -55,7 +55,7 @@ public class StadDataParserImpl implements StadDataParserService {
 
     private void parseLogFile(Path logileName, Date executiondate) throws UncheckedIOException,MalformedInputException,IOException {
 
-        parseLogFileToList(logileName).forEach(data->storeInDb(data,executiondate));
+        parseLogFileToList(logileName).filter(stadDataraw -> stadDataraw!=null).parallel().forEach(data->storeInDb(data,executiondate));
         Path tonename=FileSystems.getDefault().getPath(logileName.toAbsolutePath()+RENAMEEXTENSION);
         try {
             Files.move(logileName, tonename);
@@ -64,7 +64,7 @@ public class StadDataParserImpl implements StadDataParserService {
         }
         catch(FileAlreadyExistsException e)
         {
-            System.out.println(e.fillInStackTrace());
+            logger.error("Error impossible to move file",e);
         }
 
     }
@@ -87,7 +87,7 @@ public class StadDataParserImpl implements StadDataParserService {
         try {
             logger.debug("Looking from files in "+dirPath);
             Stream<Path> streamOfLogFiles = Files.find(directory,1,(path, basicFileAttributes) -> path.getFileName().toString().endsWith(LOGEXTENSION));
-            streamOfLogFiles.parallel().forEach(path-> {
+            streamOfLogFiles.forEach(path-> {
                 try {
                     logger.info("Scanning file" +path.toString());
                      parseLogFile(path,executiondate);
@@ -96,22 +96,29 @@ public class StadDataParserImpl implements StadDataParserService {
                 }
                 catch(UncheckedIOException e)
                 {
-                    logger.error("Error parsing file "+path.toString(),e);
+                    logger.error("Error UncheckedIOException parsing file "+path.toString(),e);
                     renameFileInError(path);
 
                 }
                 catch (MalformedInputException e) {
-                       logger.error("Error parsing file "+path.toString(),e);
+                       logger.error("Error MalformedInputException parsing file "+path.toString(),e);
                        renameFileInError(path);
 
                  } catch (IOException e) {
-                    logger.error("error parsing file "+path.toString(),e);
+                    logger.error("error IOException parsing file "+path.toString(),e);
                     renameFileInError(path);
+                }
+                  catch (Exception e) {
+                logger.error("error  Exception parsing file "+path.toString(),e);
+                 renameFileInError(path);
                 }
             });
 
         } catch (IOException e) {
             logger.error("error parsing file",e);
+        }
+         catch (Exception e) {
+            logger.error("Technical rror parsing file",e);
         }
         finally {
             try {
@@ -126,7 +133,7 @@ public class StadDataParserImpl implements StadDataParserService {
             }
             catch(Exception e)
             {
-                e.printStackTrace();
+              logger.error("Technical Exception",e);
             }
         }
     }
@@ -135,7 +142,7 @@ public class StadDataParserImpl implements StadDataParserService {
         logger.debug(data.getStardate()+" time:"+ data.getStartTime() +" tcode:"+data.getTcode()+" user :"+data.getAccount());
         StadData stadData= null;
         try {
-            stadData = new StadData(data.getServer(),data.getStardate(),data.getStartTime(),data.getEndDate(),data.getEndTime(),data.getTcode(), data.getTaskType(),data.getResponseTime(),data.getCputime(),data.getQueueTime(),data.getUsedBytes(),data.getAccount(),data.getDynpron(),data.getReport());
+            stadData = new StadData(data.getIndex(),data.getServer(),data.getStardate(),data.getStartTime(),data.getEndDate(),data.getEndTime(),data.getTcode(), data.getTaskType(),data.getResponseTime(),data.getCputime(),data.getQueueTime(),data.getUsedBytes(),data.getAccount(),data.getDynpron(),data.getReport());
             stadData.setDateindex(executiondate);
             mongoOperation.save(stadData);
         } catch (ParseException e) {

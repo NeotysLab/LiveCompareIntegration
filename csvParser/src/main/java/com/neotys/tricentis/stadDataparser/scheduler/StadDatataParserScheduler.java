@@ -22,19 +22,23 @@ public class StadDatataParserScheduler {
     private StadDataParserImpl logservice;
     private String testingdirectory;
 
-    @Scheduled(cron="1 * * * * *")
+
+    @Scheduled(fixedDelay=600000)
     public void generateNavigationParsing() throws StadDataConfigExceptin {
         try {
-            StadDataConfig config = new StadDataConfig();
 
-            logger.info("Starting log parsing task");
-            logger.info("Parsing directory "+config.getTESTINGDIRECTORY());
-            logservice.setDirPath(config.getTESTINGDIRECTORY());
-            logservice.scanForLogFiles();
-            logger.info("Log parsing finished");
+                StadDataConfig config = new StadDataConfig();
+                logger.info("Starting log parsing task");
+                logger.info("Parsing directory " + config.getTESTINGDIRECTORY());
+                logservice.setDirPath(config.getTESTINGDIRECTORY());
+                logservice.scanForLogFiles();
+                logger.info("Log parsing finished");
+
+
         } catch(StadDataConfigExceptin e)
         {
             logger.error("Configuration issue ", e);
+
         }  catch(Exception e) {
             logger.error("error during the parsing ", e);
         }

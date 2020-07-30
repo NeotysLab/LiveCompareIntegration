@@ -1,5 +1,7 @@
 package com.neotys.tricentis.MongoDB.aggregate;
 
+import com.neotys.tricentis.MongoDB.data.SAPStep;
+
 public class Step {
     int hour;
     int minute;
@@ -14,9 +16,11 @@ public class Step {
     String tcode;
     long datesession;
     long thinktime;
+    long index;
 
-    public Step(String tcode,int hour, int minute, int second, int month, int day, int year, long responseTime, long cputime, long usedBytes, String dynpron,long datesession) {
+    public Step(long index,String tcode,int hour, int minute, int second, int month, int day, int year, long responseTime, long cputime, long usedBytes, String dynpron,long datesession) {
         this.hour = hour;
+        this.index=index;
         this.tcode=tcode;
         this.minute = minute;
         this.second = second;
@@ -28,6 +32,20 @@ public class Step {
         this.usedBytes = usedBytes;
         this.dynpron = dynpron;
         this.datesession=datesession;
+    }
+    public SAPStep toSAPStep()
+    {
+         return new SAPStep(this.getTcode(),this.getHour(),this.getMinute(),this.getSecond(),this.getMonth(),this.getDay(), this.getYear(),this.getResponseTime(),this.getCputime(),this.getUsedBytes(),this.getDynpron(),this.getDatesession(),this.getThinktime());
+
+
+    }
+
+    public long getIndex() {
+        return index;
+    }
+
+    public void setIndex(long index) {
+        this.index = index;
     }
 
     public long getThinktime() {

@@ -1,35 +1,35 @@
 package com.neotys.tricentis.workloadParser.service;
 
+import com.google.common.collect.Range;
 import com.neotys.tricentis.MongoDB.aggregate.*;
-import com.neotys.tricentis.MongoDB.data.TCodeUsagePerMin;
-import com.neotys.tricentis.MongoDB.data.UserSAPSession;
+import com.neotys.tricentis.MongoDB.data.*;
+import com.neotys.tricentis.MongoDB.data.repository.NavigationStepRepository;
 import com.neotys.tricentis.MongoDB.data.repository.StadDataRepository;
 import com.neotys.tricentis.MongoDB.data.repository.UserSAPSessionRepository;
 import com.neotys.tricentis.MongoDB.data.repository.WorkflowRepositoryCustom;
-import com.neotys.tricentis.MongoDB.spark.datamodel.Session;
 import com.neotys.tricentis.workloadParser.Task.WorkloadParserTask;
-import com.neotys.tricentis.workloadParser.scheduler.WorkloadParserScheduler;
-import org.apache.spark.SparkConf;
-import org.apache.spark.ml.fpm.FPGrowth;
-import org.apache.spark.ml.fpm.FPGrowthModel;
+
+import org.apache.spark.ml.fpm.PrefixSpan;
 import org.apache.spark.sql.*;
-import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.types.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Service;
+import scala.collection.JavaConverters;
+import scala.collection.Seq;
 
 import java.util.ArrayList;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static com.neotys.tricentis.workloadParser.app.Constants.MAX_RATIO;
-import static com.neotys.tricentis.workloadParser.app.Constants.SPARK_APPNAME;
-import static com.neotys.tricentis.workloadParser.app.Constants.SPARK_PATH;
+import static com.neotys.tricentis.workloadParser.app.Constants.*;
 
 @Service("WorkloadPaserService")
 public class WorkloadPaserService implements WorkloadSeriviceInterface{
@@ -49,6 +49,8 @@ public class WorkloadPaserService implements WorkloadSeriviceInterface{
     @Autowired
     private MongoOperations operations;
 
+    @Autowired
+    private NavigationStepRepository navigationStepRepository;
 
     private void updateTcodeTime(Date date)
     {
@@ -64,25 +66,40 @@ public class WorkloadPaserService implements WorkloadSeriviceInterface{
     }
     @Override
     public void generateUserSession() {
-
-        if(extractor_date>0 ) {
-            if(lasttcodeparser_date==0||lasttcodeparser_date<extractor_date)
-            {
-                logger.info("strating the parsing for "+extractor_date);
-                generateTcodeUsagePermin();
-                Date tcodparseDate = new Date();
-                generateSAPSession(tcodparseDate);
-                updateTcodeTime(tcodparseDate);
-                detectCommonPatern();
-
-                if(sparkSession != null)
+        try {
+            if (extractor_date > 0) {
+                if (lasttcodeparser_date == 0 || lasttcodeparser_date < extractor_date)
                 {
-                    sparkSession.close();
+                    logger.info("strating the parsing for " + extractor_date);
+                    Date tcodparseDate = new Date();
+                    generateTcodeUsagePermin(tcodparseDate);
+                    generateSAPSession(tcodparseDate);
+                    updateTcodeTime(tcodparseDate);
+                    try {
+                        logger.debug("Stat detect common Patern");
+                        detectCommonPatern(tcodparseDate);
+                        logger.debug("Stat detect dependency flow");
+                        detectDependencyFlow(tcodparseDate);
+
+                    }
+                    catch (Exception e)
+                    {
+                        logger.error("Technical Error on common patern ",e);
+                    }
+
+                    if(sparkSession!=null)
+                        sparkSession.stop();
                 }
             }
         }
+        catch (Exception e)
+        {
+            logger.error("Technical Issue",e);
+        }
 
     }
+
+
 
 
 
@@ -91,17 +108,93 @@ public class WorkloadPaserService implements WorkloadSeriviceInterface{
         List<UserSession> userSessions=stadDataRepository.getUserSessionFromdate(extractor_date);
         userSessions.stream().forEach(session -> {
 
+            AtomicInteger atomicInteger,previousInteger;
+            atomicInteger=new AtomicInteger(0);
+            previousInteger=new AtomicInteger(0);
+            List<Integer> listofindexes=new ArrayList<>();
+            List<Range<Integer>>rangelist=new ArrayList<>();
+
+            boolean requirestoCreateaNewSession=false;
             AtomicLong atomicLong=new AtomicLong(0);
             session.getListofSession().forEach(step -> {
                 Long thinktime = atomicLong.get() > 0 ? step.getDatesession() - atomicLong.get() : 0;
                 atomicLong.set(step.getDatesession());
-                step.setThinktime(thinktime);
+                int tempint=atomicInteger.getAndIncrement();
+               if(thinktime.intValue()>MAX_THINKTIME)
+                {
+                    logger.debug("Exceeed max thinktime"+thinktime);
+
+                    if(previousInteger.get()>0)
+                    {
+                        //----requires to seperate the user flow
+                        rangelist.add(Range.closed(previousInteger.get(), tempint));
+                        logger.debug("Range stored " + String.valueOf(previousInteger.get()) + "  and " + String.valueOf(tempint));
+                    }
+                    atomicLong.set(0);
+                    step.setThinktime(0);
+                    previousInteger.set(atomicInteger.get());
+
+                }
+                else
+                    step.setThinktime(thinktime);
             });
-            operations.save(new UserSAPSession(session,extractordate));
+
+            if(rangelist.size()>0)
+                rangelist.add(Range.closed(previousInteger.get(),atomicInteger.get()-1));
+            else
+            {
+                //----case where the separation of the flow happens only ons between n -> max session
+                if(previousInteger.get()>0)
+                {
+                    rangelist.add(Range.closed(previousInteger.get(),atomicInteger.get()-1));
+                }
+            }
+            //-----get the session------------
+            List<List<Step>> newsetps=new ArrayList<>();
+            rangelist.forEach(integer -> {
+                List<Step> tmpStepList=new ArrayList<>();
+                IntStream.range(integer.lowerEndpoint(),integer.upperEndpoint()+1).forEach(value -> {
+                    //---
+                    tmpStepList.add(session.getListofSession().get(value));
+                    logger.debug("Adding step "+value);
+
+                });
+                newsetps.add(tmpStepList);
+            });
+            //---------------------------------
+
+            //------create the new sessions--------
+            newsetps.stream().forEach(steps -> {
+                if(steps.size()>0) {
+                    UserSession newsession = new UserSession(session.getAccount(), steps, steps.get(0).getDatesession());
+                    logger.debug("saving new session for user " + session.getAccount());
+                    operations.save(newsession.toUserSAPSession(extractordate));
+                }
+                else
+                {
+                    logger.error("Steps have no steps stored");
+                }
+            });
+
+
+            //---create the iniatial session
+            if(rangelist.size()>0) {
+                List<Step> backupSteps = new ArrayList<>();
+                IntStream.range(0, rangelist.stream().findFirst().get().lowerEndpoint() - 1).forEach(value ->
+                        {
+                            logger.debug("Adding previous session on position " + String.valueOf(value));
+                            backupSteps.add(session.getListofSession().get(value));
+                        }
+                );
+
+                session.setListofSession(backupSteps);
+            }
+            ///---
+            operations.save(session.toUserSAPSession(extractordate));
         });
     }
 
-    private void generateTcodeUsagePermin()
+    private void generateTcodeUsagePermin(Date extractordate)
     {
         logger.debug("GeenerateTcodeUsagePermin");
         List<TcodeUsage> tcodeUsageList=stadDataRepository.getTcodeUsagefromDate(extractor_date);
@@ -122,7 +215,7 @@ public class WorkloadPaserService implements WorkloadSeriviceInterface{
        // logger.debug("filtering the number to transaction "+ String.valueOf(usageList.size()));
         tcodeUsageList.stream().forEach(tcodeUsage -> {
             logger.debug("Saving stats for "+tcodeUsage.getTcode() + " at "+String.valueOf(tcodeUsage.getHour())+ " minute "+String.valueOf(tcodeUsage.getMinute()+" number of calls "+String.valueOf(tcodeUsage.getNumberOfCalls())+ " ratio "+ String.valueOf(tcodeUsage.getRatio())));
-            operations.save(new TCodeUsagePerMin(tcodeUsage));
+            operations.save(new TCodeUsagePerMin(tcodeUsage,extractordate));
         });
     }
     @Override
@@ -138,12 +231,81 @@ public class WorkloadPaserService implements WorkloadSeriviceInterface{
                 .getOrCreate();
     }
 
+    private void detectDependencyFlow(Date extractordate)
+    {
+        logger.debug("Getting the Userflow");
+        List<UserFlow> sessionPaths=navigationStepRepository.getUserFlow(extractordate);
 
+        logger.debug("number of Userflow"+String.valueOf(sessionPaths.size()));
+        List<Row> sessionList=new ArrayList<>();
+        sessionPaths.stream().filter(userFlow -> userFlow.getAccount()!=null).forEach(sapSession -> {
+            logger.debug("adding step of "+sapSession.getAccount());
+            sapSession.getFlow().stream().forEach(flow ->{
+                if(flow.getTo()!=null)
+                    logger.debug("TO : " + flow.getTcode() + " to " + flow.getTo().getTcode());
+            });
+            sessionList.add(RowFactory.create(sapSession.toSequence()));
+
+        });
+
+        StructType schema = new StructType(new StructField[]{ new StructField(
+                "userflow", new ArrayType(new ArrayType(DataTypes.StringType, true),true), false, Metadata.empty())
+        });
+
+        Dataset<Row> sessionDF=sparkSession.createDataFrame(sessionList,schema);
+        ///print scheme
+
+        //---display data
+        sessionDF.collectAsList().stream().forEach(row -> {
+            for(int i=0;i<row.length();i++)
+            {
+                logger.debug("NeW ROW");
+                row.getList(i).stream().forEach(o -> {
+                    if(o instanceof String)
+                    {
+                        logger.debug(" step "+ o);
+                    }
+
+                    else
+                        logger.debug("class name : "+o.getClass().getName()+" Step "+ o.toString());
+                });
+            }
+        });
+
+        sessionDF.printSchema();
+        sessionDF.show();
+
+
+        PrefixSpan prefixSpan = new PrefixSpan().setMinSupport(0.8)
+                                                .setMaxPatternLength(100)
+                                                .setSequenceCol("userflow");
+
+        // Finding frequent sequential patterns
+        Dataset<Row> frequentitems = prefixSpan.findFrequentSequentialPatterns(sessionDF);
+        frequentitems.printSchema();
+
+        frequentitems.foreach(row ->  {
+
+            logger.debug("Frequent asset - size "+ String.valueOf(row.size()));
+            logger.debug(row.prettyJson());
+            Long freq=row.getLong(1);
+            List<List<String>> seq= JavaConverters.seqAsJavaList(row.getSeq(0));
+            logger.debug("Number :"+String.valueOf(freq) );
+            seq.stream().forEach(strings -> {
+                logger.debug("Step "+strings.stream().collect(Collectors.joining(",")));
+            });
+        });
+
+
+
+
+    }
 
     @Override
-    public void detectCommonPatern() {
-        List<InteractionCountbyStep> countbyStepList=userSAPSessionRepository.getInteractionCountbyStep(lasttcodeparser_date);
-        List<TotalCountByStep> totalCountByStepList=userSAPSessionRepository.getTotalCountByStep(lasttcodeparser_date);
+    public void detectCommonPatern(Date extractordate) {
+
+        List<InteractionCountbyStep> countbyStepList=userSAPSessionRepository.getInteractionCountbyStep(extractordate);
+        List<TotalCountByStep> totalCountByStepList=userSAPSessionRepository.getTotalCountByStep(extractordate);
         List<String> transactionlist=new ArrayList<>();
         countbyStepList.stream().forEach(interactionCountbyStep -> {
                 transactionlist.add(interactionCountbyStep.getTcode()+"_"+interactionCountbyStep.getDynpron());
@@ -154,37 +316,90 @@ public class WorkloadPaserService implements WorkloadSeriviceInterface{
                 }
         });
 
-        List<UserSAPSession> userSAPSessions=userSAPSessionRepository.getUserSessionFromParsingDate(lasttcodeparser_date);
+        List<UserSAPSession> userSAPSessions=userSAPSessionRepository.getUserSessionFromParsingDate(extractordate);
 
-        List<Session> sessionList=new ArrayList<>();
+        //----create navigationSteps------
+        buildDepencySapSesion(userSAPSessions,extractordate);
+
+      /*  logger.debug("Numbner of Sessions "+String.valueOf(userSAPSessions.size()));
+        List<Row> sessionList=new ArrayList<>();
         userSAPSessions.stream().forEach(sapSession -> {
+            logger.debug("adding session of "+sapSession.getAccount());
             Session session=new Session(sapSession);
-            sessionList.add(session);
+            sessionList.add(RowFactory.create(session.getSession()));
+
+        });StructType schema = new StructType(new StructField[]{ new StructField(
+                "session", new ArrayType(new ArrayType(DataTypes.StringType, false),false), false, Metadata.empty())
+        });
+
+        Dataset<Row> sessionDF=sparkSession.createDataFrame(sessionList,schema);
+        for (Row freqSeq: sessionDF.collectAsList()) {
+            logger.debug("Input assset" +freqSeq.prettyJson() );
+        }
+        PrefixSpan prefixSpan = new PrefixSpan().setMinSupport(0.5)
+                                                .setMaxPatternLength(100)
+                                                  .setSequenceCol("session");
+
+        // Finding frequent sequential patterns
+        Dataset<Row> frequentitems = prefixSpan.findFrequentSequentialPatterns(sessionDF);
+        for (Row freqSeq: frequentitems.collectAsList()) {
+            logger.debug("Frequent assset" +freqSeq.prettyJson() );
+        }
+
+*/
+
+    }
+
+    private void buildDepencySapSesion(List<UserSAPSession> userSAPSessionList, Date extractordate)
+    {
+        List<NavigationStep> navigationSteps =new ArrayList<>();
+        userSAPSessionList.stream().forEach(sapSession -> {
+            IntStream.range(0, sapSession.getListofSession().size())
+                    .forEach(idx ->{
+                        SAPStep  previsous;
+                        SAPStep  next;
+                        Dependency previousdepency;
+                        Dependency nextdepenncy;
+                        ///----if first no from
+                        if(idx==0)
+                        {
+                            previsous=null;
+                            previousdepency=null;
+                        }
+                        else
+                        {
+                            previsous=sapSession.getListofSession().get(idx-1);
+                            previousdepency=new Dependency(previsous.getTcode(),previsous.getDatesession(),previsous.getDynpron());
+
+                        }
+
+                        if(idx<(sapSession.getListofSession().size()-1))
+                        {
+                            //---to step will exist
+                            next=sapSession.getListofSession().get(idx+1);
+                            nextdepenncy=new Dependency(next.getTcode(),next.getDatesession(),next.getDynpron());
+                        }
+                        else {
+                            next = null;
+                            nextdepenncy=null;
+                        }
+                        SAPStep current=sapSession.getListofSession().get(idx);
+
+                        navigationSteps.add(new NavigationStep(extractordate,current.getDatesession(),current.getTcode(),sapSession.getAccount(),current.getDynpron(),idx,previousdepency,nextdepenncy));
+                    });
 
         });
-        Encoder<Session> sessionEncoder = Encoders.bean(Session.class);
-        Dataset<Session> javaBeanDS = sparkSession.createDataset(
-                sessionList,
-                sessionEncoder
-        );
 
+        this.navigationStepRepository.saveNavigationsSteps(navigationSteps);
 
-        FPGrowthModel model = new FPGrowth()
-                .setItemsCol("session")
-                .setMinSupport(0.5)
-                .setMinConfidence(0.6)
-                .fit(javaBeanDS);
+    }
 
-        model.freqItemsets().show();
-
-        // Display generated association rules.
-        model.associationRules().show();
-
-// transform examines the input items against all the association rules and summarize the
-// consequents as prediction
-        model.transform(javaBeanDS).show();
-
-
+    @Override
+    public void closeService() {
+        if(sparkSession != null)
+        {
+            sparkSession.close();
+        }
     }
 
 

@@ -1,6 +1,7 @@
 package com.neotys.tricentis.stadDataparser.data;
 
 public class StadDataraw implements iStadData {
+    private long index;
     private long startdate;
     private long enddate;
     private String server;
@@ -17,6 +18,14 @@ public class StadDataraw implements iStadData {
     private long usedBytes;
     private String account;
     private String dynpron;
+
+    public long getIndex() {
+        return index;
+    }
+
+    public void setIndex(long index) {
+        this.index = index;
+    }
 
     public long getStartdate() {
         return startdate;

@@ -38,4 +38,5 @@ public class Constants {
     public static final double MAX_RATIO=0;
     public static final String SPARK_PATH="/opt/WorkLoadParser/spark";
     public static final String SPARK_APPNAME="TcodeParser";
+    public static final int MAX_THINKTIME=1200000;
 }

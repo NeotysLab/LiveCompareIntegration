@@ -6,8 +6,8 @@ public class InteractionCountbyStep {
     String tcode;
     int count;
     double ratio;
-    public InteractionCountbyStep(int index, String dynpron, String tcode, int count) {
-        this.arrayIndex = index;
+    public InteractionCountbyStep(int arrayIndex, String tcode , String dynpron, int count) {
+        this.arrayIndex = arrayIndex;
         this.dynpron = dynpron;
         this.tcode = tcode;
         this.count = count;

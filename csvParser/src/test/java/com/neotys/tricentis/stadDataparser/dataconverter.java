@@ -30,4 +30,15 @@ public class dataconverter {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void testCharacter()
+    {
+        String pourri="3 101";
+        pourri=pourri.replaceAll("(^\\h*)|(\\h*$)","");
+        pourri=pourri.replaceAll("\\s+", "");
+        pourri=pourri.replaceAll("\u00A0", "");
+        Long.parseLong(pourri);
+        pourri.chars().forEach(value -> System.out.println(value));
+    }
 }

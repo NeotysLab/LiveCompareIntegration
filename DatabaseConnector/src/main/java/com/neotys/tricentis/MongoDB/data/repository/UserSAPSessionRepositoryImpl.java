@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
@@ -38,7 +39,7 @@ public class UserSAPSessionRepositoryImpl implements UserSAPSessionRepositoryInt
     }
 
     @Override
-    public List<UserSAPSession> getUserSessionFromParsingDate(long date) {
+    public List<UserSAPSession> getUserSessionFromParsingDate(Date date) {
         Criteria filterStates = Criteria.where("dateindex").is(date);
         Query query=new Query();
         query.addCriteria(filterStates);
@@ -48,7 +49,7 @@ public class UserSAPSessionRepositoryImpl implements UserSAPSessionRepositoryInt
     }
 
     @Override
-    public List<InteractionCountbyStep> getInteractionCountbyStep(long parsingdate) {
+    public List<InteractionCountbyStep> getInteractionCountbyStep(Date parsingdate) {
         //db.getCollection('UserSAPSession').aggregate([
         //   { $unwind: { path: "$listofSession", includeArrayIndex: "arrayIndex" }},
         //   { $group: {
@@ -75,7 +76,7 @@ public class UserSAPSessionRepositoryImpl implements UserSAPSessionRepositoryInt
     }
 
     @Override
-    public List<TotalCountByStep> getTotalCountByStep(long parsingdate) {
+    public List<TotalCountByStep> getTotalCountByStep(Date parsingdate) {
         MatchOperation filterStates = match(new Criteria("dateindex").is(parsingdate));
         UnwindOperation unwindOperation=unwind("listofSession","arrayIndex");
         GroupOperation groupByStateAndSumPop = group("arrayIndex")

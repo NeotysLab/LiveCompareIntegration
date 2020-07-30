@@ -27,6 +27,8 @@ public class StadData {
     @Id
     private ObjectId id;
 
+    @Indexed
+    private long index;
     @Indexed//(name="dateindex", expireAfterSeconds=72000)
     private Date dateindex;
 
@@ -65,7 +67,13 @@ public class StadData {
     private String dynpron;
     private String report;
 
+    public long getIndex() {
+        return index;
+    }
 
+    public void setIndex(long index) {
+        this.index = index;
+    }
 
     public ObjectId getId() {
         return id;
@@ -274,21 +282,23 @@ public class StadData {
         this.dynpron = dynpron;
     }
 
-    public StadData(String server, String stardate, String startTime, String endDate, String endTime, String tcode, String taskType, long responseTime, long cputime, long queueTime, long usedBytes, String account, String dynpron,String report) throws ParseException {
+    public StadData(long index,String server, String stardate, String startTime, String endDate, String endTime, String tcode, String taskType, long responseTime, long cputime, long queueTime, long usedBytes, String account, String dynpron,String report) throws ParseException {
+        this.index=index;
         this.server = server;
         this.startdate = stardate;
         this.startTime = startTime;
         this.endDate = endDate;
         this.report=report;
         this.endTime = endTime;
-        this.tcode = tcode;
+
+        this.tcode = clean(tcode);
         this.taskType = taskType;
         this.responseTime = responseTime;
         this.cputime = cputime;
         this.queueTime = queueTime;
         this.usedBytes = usedBytes;
         this.account = account;
-        this.dynpron = dynpron;
+        this.dynpron = clean(dynpron);
         this.startdatems=convertDate(startdate,startTime);
         this.enddatems=convertDate(endDate,endTime);
         ZonedDateTime startDateFormat;
@@ -302,6 +312,13 @@ public class StadData {
         this.dateindex=new Date();
     }
 
+    private String clean(String input)
+    {
+        input=input.replaceAll("(^\\h*)|(\\h*$)","");
+        input=input.replaceAll("\\s+", "");
+        input=input.replaceAll("\u00A0", "");
+        return input;
+    }
     public String getReport() {
         return report;
     }

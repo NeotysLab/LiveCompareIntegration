@@ -25,22 +25,15 @@ public class UserSAPSession {
     private String account;
     private List<SAPStep> listofSession;
 
-    public UserSAPSession(String account, List<SAPStep> listofSession) {
+
+
+    public UserSAPSession(String account, List<SAPStep> listofSession,Date dateindex,long sessiondate) {
         this.account = account;
         this.listofSession = listofSession;
-        dateindex=new Date();
+        this.dateindex=dateindex;
+        this.sessiondate=sessiondate;
     }
 
-    public UserSAPSession(UserSession session,Date dateindex)
-    {
-        this.dateindex=dateindex;
-        this.account=session.getAccount();
-        listofSession=new ArrayList<>();
-        session.getListofSession().forEach(step -> {
-            listofSession.add(new SAPStep(step));
-        });
-        this.sessiondate=session.getStartdatems();
-    }
 
     public String getAccount() {
         return account;

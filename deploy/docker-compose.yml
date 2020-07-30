@@ -23,6 +23,7 @@ services:
     volumes:
     - /home/ubuntu/workloadparser/log:/opt/WorkLoadParser/log
     - /home/ubuntu/workloadparser/spark:/opt/WorkLoadParser/spark
+    - /home/ubuntu/workloadparser/hadoop:/opt/WorkLoadParser/Hadoop
     ports:
     - "8081:8080"
     environment:
@@ -31,6 +32,7 @@ services:
     - MONGOPORT=27017
     - MONGOUSER=<YOURUSER>
     - MONGOPASSWORD=<YOURPASSWORD>
+    - HADOOP_HOME=/opt/WorkLoadParser/Hadoop
     depends_on:
     - mongodb
     networks:

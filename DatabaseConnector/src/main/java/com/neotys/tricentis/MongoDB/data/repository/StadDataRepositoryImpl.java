@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.neotys.tricentis.MongoDB.config.Constants.TYPE_TRANSACTIONS;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
@@ -51,7 +52,7 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
 
     @Override
     public List<UserSession> getUserSessionFromdate(long date) {
-            MatchOperation filterStates = match(new Criteria("dateindex").is(new Date(date)).and("taskType").is("D").and("tcode").exists(true));
+            MatchOperation filterStates = match(new Criteria("dateindex").is(new Date(date)).and("taskType").in(TYPE_TRANSACTIONS).and("tcode").exists(true).andOperator(Criteria.where("tcode").ne("").and("dynpron").ne("")));
             GroupOperation groupByStateAndSumPop = group("account")
                     .addToSet(new BasicDBObject("tcode","$tcode")
                             .append("responseTime","$responseTime")
@@ -64,12 +65,13 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
                             .append("day","$day")
                             .append("month","$month")
                             .append("datesession","$startdatems")
+                            .append("index","$index")
                             .append("year","$year")).as("listofSession")
                     .first("startdatems").as("startdatems")
                     .first("account").as("account");
            UnwindOperation unwindOperation=unwind("listofSession");
 
-           SortOperation sortByPopAsc = sort(Sort.Direction.ASC, "listofSession.year","listofSession.month","listofSession.day","listofSession.hour","listofSession.minute","listofSession.second");
+           SortOperation sortByPopAsc = sort(Sort.Direction.ASC, "listofSession.index","listofSession.year","listofSession.month","listofSession.day","listofSession.hour","listofSession.minute","listofSession.second");
            GroupOperation groupOperation=group("account")
                                     .push("listofSession").as("listofSession")
                                     .first("startdatems").as("startdatems")
@@ -84,7 +86,7 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
 
     @Override
     public List<TcodeUsage> getTcodeUsagefromDate(long start) {
-        MatchOperation filterStates = match(new Criteria("taskType").is("D").and("tcode").exists(true).and("dateindex").is( new Date(start)));
+        MatchOperation filterStates = match(new Criteria("taskType").in(TYPE_TRANSACTIONS).and("tcode").exists(true).and("dateindex").is( new Date(start)));
         GroupOperation groupByStateAndSumPop = group("tcode","hour","minute","account")
                 .first("startdatems").as("startdatems")
                 .first("year").as("year")
@@ -122,7 +124,7 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
      }
 
      ]);*/
-        MatchOperation filterStates = match(new Criteria("taskType").is("D").and("tcode").exists(true).andOperator(Criteria.where("startdatems").gt(start),Criteria.where("startdatems").lt(end)));
+        MatchOperation filterStates = match(new Criteria("taskType").in(TYPE_TRANSACTIONS).and("tcode").exists(true).andOperator(Criteria.where("startdatems").gt(start),Criteria.where("startdatems").lt(end)));
         GroupOperation groupByStateAndSumPop = group("tcode","hour","minute","account")
                 .first("year").as("year")
                 .first("month").as("month")
@@ -161,7 +163,7 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
         //,{
         //$sort :{"_id.hour" : 1,"_id.minute":1 }
         //}
-        MatchOperation filterStates = match(new Criteria("taskType").is("D").and("tcode").exists(true).andOperator(Criteria.where("startdatems").gt(start),Criteria.where("startdatems").lt(end)));
+        MatchOperation filterStates = match(new Criteria("taskType").in(TYPE_TRANSACTIONS).and("tcode").exists(true).andOperator(Criteria.where("startdatems").gt(start),Criteria.where("startdatems").lt(end)));
         GroupOperation groupByStateAndSumPop = group("tcode","hour","minute")
                 .first("year").as("year")
                 .first("month").as("month")
@@ -182,7 +184,7 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
 
     @Override
     public List<TransactionUsage> getTransactionUsageFromDate(long start) {
-        MatchOperation filterStates = match(new Criteria("taskType").is("D").and("tcode").exists(true).and("dateindex").is(new Date(start)));
+        MatchOperation filterStates = match(new Criteria("taskType").in(TYPE_TRANSACTIONS).and("tcode").exists(true).and("dateindex").is(new Date(start)));
         GroupOperation groupByStateAndSumPop = group("tcode","hour","minute")
                 .first("year").as("year")
                 .first("month").as("month")
@@ -219,7 +221,7 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
         //}
         //
         //]);
-        MatchOperation filterStates = match(new Criteria("taskType").is("D").and("tcode").exists(true).andOperator(Criteria.where("startdatems").gt(start),Criteria.where("startdatems").lt(end)));
+        MatchOperation filterStates = match(new Criteria("taskType").in(TYPE_TRANSACTIONS).and("tcode").exists(true).andOperator(Criteria.where("startdatems").gt(start),Criteria.where("startdatems").lt(end)));
         GroupOperation groupByStateAndSumPop = group("tcode","hour","account");
         GroupOperation groupSecond=group("tcode","hour").count().as("numberofcalls");
         SortOperation sortByPopAsc = sort(Sort.Direction.ASC, "hour");
@@ -232,7 +234,7 @@ public class StadDataRepositoryImpl implements StadDataRepositoryCustom {
 
     @Override
     public List<TransactionPerHour> getTransactionPerHourFromDate(long start) {
-        MatchOperation filterStates = match(new Criteria("taskType").is("D").and("tcode").exists(true).and("dateindex").is(new Date(start)));
+        MatchOperation filterStates = match(new Criteria("taskType").in(TYPE_TRANSACTIONS).and("tcode").exists(true).and("dateindex").is(new Date(start)));
         GroupOperation groupByStateAndSumPop = group("tcode","hour","account");
         GroupOperation groupSecond=group("tcode","hour").count().as("numberofcalls");
         SortOperation sortByPopAsc = sort(Sort.Direction.ASC, "hour");

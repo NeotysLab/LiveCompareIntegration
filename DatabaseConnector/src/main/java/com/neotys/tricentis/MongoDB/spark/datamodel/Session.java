@@ -1,41 +1,42 @@
 package com.neotys.tricentis.MongoDB.spark.datamodel;
 
+import com.neotys.tricentis.MongoDB.data.SAPStep;
 import com.neotys.tricentis.MongoDB.data.UserSAPSession;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Session {
-    String account;
-    List<Step> session;
+    List<List<String>> session;
 
     public Session(UserSAPSession sapSession)
     {
-        this.account=sapSession.getAccount();
+
         session=new ArrayList<>();
-        sapSession.getListofSession().stream().forEach(sapStep -> {
-            session.add(new Step(sapStep.getDynpron(),sapStep.getTcode()));
-        });
+
+
+        IntStream.range(0, sapSession.getListofSession().stream().filter(sapStep -> sapStep.getTcode() !=null && !sapStep.getTcode().isEmpty()).collect(Collectors.toList()).size())
+                .forEach(idx ->
+                {
+                    SAPStep step=sapSession.getListofSession().get(idx);
+                    session.add(Arrays.asList(step.getTcode()+":"+step.getDynpron()));
+                });
+
     }
 
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
-    public List<Step> getSession() {
+    public List<List<String>> getSession() {
         return session;
     }
 
-    public void setSession(List<Step> session) {
+    public void setSession(List<List<String>> session) {
         this.session = session;
     }
 
-    public Session(String account, List<Step> session) {
-        this.account = account;
+    public Session(List<List<String>> session) {
+
         this.session = session;
     }
 }

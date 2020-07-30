@@ -8,9 +8,16 @@ public class TotalCountByStep {
 
 
 
-    public TotalCountByStep(int arrayIndex, int count) {
-        this.arrayIndex = arrayIndex;
-        this.count = count;
+    public TotalCountByStep(Integer arrayIndex, Integer count) {
+        if(arrayIndex !=null)
+            this.arrayIndex = arrayIndex.intValue();
+        else
+            this.arrayIndex=0;
+
+        if(count!=null)
+            this.count = count.intValue();
+        else
+            this.count=0;
     }
 
     public int getArrayIndex() {

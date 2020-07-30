@@ -33,7 +33,7 @@ public class WorkLoadParserApp implements CommandLineRunner {
     }
 
     @Bean
-    CommandLineRunner init(WorkflowRepositoryCustom repository, StadDataRepository stadDataRepository,UserSAPSessionRepository userSAPSessionRepository,TcodeUsagePerMinRepository tcodeUsagePerMinRepository) {
+    CommandLineRunner init(WorkflowRepositoryCustom repository, StadDataRepository stadDataRepository,UserSAPSessionRepository userSAPSessionRepository,TcodeUsagePerMinRepository tcodeUsagePerMinRepository,NavigationStepRepository navigationStepRepository) {
         return args -> {
             logger.debug("Repository: " + repository);
         };

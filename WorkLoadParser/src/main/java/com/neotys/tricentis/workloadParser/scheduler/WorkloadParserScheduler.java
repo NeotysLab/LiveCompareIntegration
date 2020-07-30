@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 @Component
 public class WorkloadParserScheduler {
     private static final Logger logger =LoggerFactory.getLogger(WorkloadParserScheduler.class);
@@ -16,15 +18,18 @@ public class WorkloadParserScheduler {
     @Autowired
     private WorkloadPaserService parserservice;
 
-    @Scheduled(cron="1 * * * * *")
+    @Scheduled(fixedDelay=1200000)
     public void GenerateNavigationParsing() {
         WorkloadParserConfig config=new WorkloadParserConfig();
         try {
             logger.info("task started");
              parserservice.initService();
              parserservice.generateUserSession();
+             parserservice.closeService();
             logger.info("task ended");
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             logger.error("error during the parsing ",e);
         }
 
