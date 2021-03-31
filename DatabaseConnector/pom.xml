@@ -14,7 +14,7 @@
 
         <spring-boot.version>2.0.3.RELEASE</spring-boot.version>
         <spring-web.version>5.0.7.RELEASE</spring-web.version>
-        <guava.version>25.1-jre</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <immutables.version>2.6.3</immutables.version>
         <netty-transport.version>4.1.21.Final</netty-transport.version>
 
